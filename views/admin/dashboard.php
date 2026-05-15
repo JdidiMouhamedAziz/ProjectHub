@@ -16,6 +16,43 @@ $userModel = new User($pdo);
 $taskModel = new Task($pdo);
 $submissionModel = new TaskSubmission($pdo);
 
+if (isset($_GET['export']) && $_GET['export'] === 'tasks_csv') {
+    $tasks = $taskModel->findAllTasks();
+    $projects = $projectModel->findAllProjects();
+    $users = $userModel->findAllUsers();
+
+    $projectMap = [];
+    foreach ($projects as $project) {
+        $projectMap[$project['id']] = $project['title'];
+    }
+
+    $userMap = [];
+    foreach ($users as $user) {
+        $userMap[$user['id']] = $user['username'];
+    }
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="admin-tasks-export.csv"');
+
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['ID', 'Title', 'Status', 'Complexity', 'Project', 'Assigned To', 'Created At']);
+
+    foreach ($tasks as $task) {
+        fputcsv($output, [
+            $task['id'],
+            $task['title'],
+            $task['status'],
+            $task['complexity'],
+            $projectMap[$task['project_id']] ?? 'Unknown',
+            !empty($task['assigned_to']) ? ($userMap[$task['assigned_to']] ?? 'Unknown') : 'Unassigned',
+            $task['created_at'] ?? '',
+        ]);
+    }
+
+    fclose($output);
+    exit();
+}
+
 $totalProjects = count($projectModel->findAllProjects());
 $totalUsers = count($userModel->findAllUsers());
 $totalTasks = count($taskModel->findAllTasks());
@@ -214,6 +251,11 @@ $recentProjects = array_slice(array_reverse($projects), 0, 5);
                             <a href="../../controllers/userController.php?action=create" class="btn btn-light">
                                 <i class="fas fa-user-plus me-1"></i> Add User
                             </a>
+
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#exportModal">
+                                <i class="fas fa-file-csv me-1"></i> Export CSV
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -403,6 +445,50 @@ $recentProjects = array_slice(array_reverse($projects), 0, 5);
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:20px; border:none; overflow:hidden;">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-csv me-2"></i>
+                        Export CSV
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form action="../../controllers/exportController.php?action=download" method="post">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="export_type" class="form-label fw-semibold">Select data to export</label>
+                            <select id="export_type" name="export_type" class="form-select" required>
+                                <option value="" selected disabled>Choose dataset</option>
+                                <option value="projects">Projects</option>
+                                <option value="users">Users</option>
+                                <option value="tasks">Tasks</option>
+                                <option value="submissions">Task Submissions</option>
+                                <option value="members">Project Members</option>
+                            </select>
+                        </div>
+
+                        <input type="hidden" name="format" value="csv">
+
+                        <div class="alert alert-light border small mb-0">
+                            The file will download immediately after you choose a dataset and click Export.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-download me-1"></i> Export
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

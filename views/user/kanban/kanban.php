@@ -18,7 +18,8 @@ $memberships = $pmModel->findProjectsByMember($_SESSION['user']['id']);
 $userProjects = [];
 foreach ($memberships as $m) {
     $p = $projectModel->findProjectById($m['project_id']);
-    if ($p) $userProjects[] = $p;
+    if ($p)
+        $userProjects[] = $p;
 }
 
 // selected project from query or default to first
@@ -110,6 +111,7 @@ $tasksByStatus = [
             font-weight: 700;
             font-size: 16px;
         }
+
         .nav-link-custom {
             color: white;
             text-decoration: none;
@@ -125,69 +127,71 @@ $tasksByStatus = [
 
 <body>
 
-    
-  <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
-    <div class="container-fluid">
 
-        <a class="navbar-brand fw-bold" href="#">
-            <i class="fas fa-project-diagram me-2"></i>ProjectHub
-        </a>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
+        <div class="container-fluid">
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-project-diagram me-2"></i>ProjectHub
+            </a>
 
-        <div class="collapse navbar-collapse" id="navbarContent">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <div class="navbar-nav ms-auto align-items-lg-center">
+            <div class="collapse navbar-collapse" id="navbarContent">
 
-                <a href="../dashboard.php" class="nav-link-custom">
-                    <i class="fas fa-chart-line me-1"></i> Dashboard
-                </a>
+                <div class="navbar-nav ms-auto align-items-lg-center">
 
-                <a href="kanban.php" class="nav-link-custom">
-                    <i class="fas fa-table-columns me-1"></i> Kanban
-                </a>
+                    <a href="../dashboard.php" class="nav-link-custom">
+                        <i class="fas fa-chart-line me-1"></i> Dashboard
+                    </a>
 
-                <a href="../notifications/list.php" class="nav-link-custom position-relative">
-                    <i class="fas fa-bell me-1"></i> Notifications
+                    <a href="kanban.php" class="nav-link-custom">
+                        <i class="fas fa-table-columns me-1"></i> Kanban
+                    </a>
 
+                    <a href="../notifications/list.php" class="nav-link-custom position-relative">
+                        <i class="fas fa-bell me-1"></i> Notifications
+
+                        <?php if (!empty($unread) && $unread > 0): ?>
+                            <span id="notifBadge"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <?php echo $unread; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
                     <?php if (!empty($unread) && $unread > 0): ?>
-                        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            <?php echo $unread; ?>
-                        </span>
+                        <button class="btn btn-sm btn-light ms-2" onclick="markAllRead()"
+                            title="Mark all notifications read">
+                            <i class="fas fa-check-double"></i>
+                        </button>
                     <?php endif; ?>
-                </a>
-                <?php if (!empty($unread) && $unread > 0): ?>
-                    <button class="btn btn-sm btn-light ms-2" onclick="markAllRead()" title="Mark all notifications read">
-                        <i class="fas fa-check-double"></i>
-                    </button>
-                <?php endif; ?>
 
-                <div class="dropdown ms-lg-3">
+                    <div class="dropdown ms-lg-3">
 
-                    <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-2"></i>
-                        <?php echo htmlspecialchars($_SESSION["user"]["username"]); ?>
-                    </button>
+                        <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <?php echo htmlspecialchars($_SESSION["user"]["username"]); ?>
+                        </button>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
 
-                        <li>
-                            <a class="dropdown-item text-danger" href="../../logout.php">
-                                <i class="fas fa-sign-out-alt me-2"></i> Logout
-                            </a>
-                        </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="../../logout.php">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
 
-                    </ul>
+                        </ul>
+
+                    </div>
 
                 </div>
-
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <div class="container-fluid py-4">
 
@@ -201,9 +205,10 @@ $tasksByStatus = [
             <div>
                 <label class="form-label mb-0 small text-muted">Project</label>
                 <select id="projectSelect" class="form-select" style="min-width:220px;">
-                    <option value="" disabled >All projects</option>
+                    <option value="" disabled>All projects</option>
                     <?php foreach ($userProjects as $p): ?>
-                        <option value="<?php echo $p['id']; ?>" <?php echo ($selectedProjectId && $selectedProjectId == $p['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($p['title']); ?></option>
+                        <option value="<?php echo $p['id']; ?>" <?php echo ($selectedProjectId && $selectedProjectId == $p['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($p['title']); ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -368,10 +373,10 @@ $tasksByStatus = [
         const currentProjectId = <?php echo json_encode($selectedProjectId); ?>;
 
         // project select navigation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const sel = document.getElementById('projectSelect');
             if (sel) {
-                sel.addEventListener('change', function() {
+                sel.addEventListener('change', function () {
                     const v = sel.value;
                     const q = v ? '?project_id=' + encodeURIComponent(v) : '';
                     window.location.href = window.location.pathname + q;
@@ -398,7 +403,7 @@ $tasksByStatus = [
                 return;
             }
 
-            fetch('/ProjectWeb/controllers/taskSubmissionController.php?action=create', {
+            fetch('../../../controllers/taskSubmissionController.php?action=create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `task_id=${_submitTaskId}&git_link=${encodeURIComponent(git_link)}&message=${encodeURIComponent(message)}&ajax=1`
@@ -419,7 +424,7 @@ $tasksByStatus = [
             e.stopPropagation();
             if (btn) btn.disabled = true;
 
-            fetch('/ProjectWeb/controllers/taskController.php?action=updateStatus&id='+encodeURIComponent(taskId)+"&status=in_progress&ajax=1")
+            fetch('../../../controllers/taskController.php?action=updateStatus&id=' + encodeURIComponent(taskId) + "&status=in_progress&ajax=1")
                 .then(r => r.json())
                 .then(data => {
                     if (data && data.success) {
@@ -435,15 +440,15 @@ $tasksByStatus = [
                 });
         }
 
-            function markAllRead() {
-                fetch('../../../controllers/notificationController.php?action=markAllRead')
+        function markAllRead() {
+            fetch('../../../controllers/notificationController.php?action=markAllRead')
                 .then(() => {
                     const b = document.getElementById('notifBadge');
                     if (b) b.remove();
                 }).catch(() => {
                     alert('Failed to mark notifications read');
                 });
-            }
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
